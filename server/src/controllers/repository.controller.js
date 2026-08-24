@@ -15,7 +15,8 @@ export const analyzeRepository = async (req, res) => {
 
         if (!owner || !repo) {
             return res.status(400).json({
-                message: "Owner and repository name are required"
+                message:
+                    "Owner and repository name are required"
             });
         }
 
@@ -32,26 +33,36 @@ export const analyzeRepository = async (req, res) => {
                 repo
             );
 
-        res.json({
-            message: "Repository indexed successfully",
-            repository: {
-                name: result.repository.name,
-                fullName: result.repository.full_name,
-                defaultBranch:
-                    result.repository.default_branch
-            },
-            totalFiles:
-                result.tree.tree.length
-        });
+            res.json({
+                message: "Repository indexed successfully",
+            
+                repository: {
+                    name: result.repository.name,
+                    fullName: result.repository.full_name,
+                    defaultBranch: result.repository.default_branch
+                },
+            
+                totalFiles: result.analyzedFiles.length,
+            
+                files: result.analyzedFiles.map((file) => ({
+                    path: file.path,
+                    sha: file.sha,
+                    size: file.size,
+            
+                    analysis: file.analysis
+                }))
+            });
 
     } catch (error) {
         console.error(
             "Repository indexing error:",
-            error.response?.data || error.message
+            error.response?.data ||
+            error.message
         );
 
         res.status(500).json({
-            message: "Failed to index repository"
+            message:
+                "Failed to index repository"
         });
     }
 };
