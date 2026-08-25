@@ -50,7 +50,9 @@ export const analyzeRepository = async (req, res) => {
                     size: file.size,
             
                     analysis: file.analysis
-                }))
+                })),
+                dependencies:
+                    result.dependencies
             });
 
     } catch (error) {

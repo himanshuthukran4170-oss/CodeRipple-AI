@@ -12,23 +12,32 @@ import {
     fetchAndAnalyzeFile
 } from "./fileFetcher.js";
 
+import {
+    buildDependencyGraph
+} from "./dependencyAnalyzer.js";
+
 
 export const indexRepository = async (
     installationId,
     owner,
     repo
 ) => {
-    console.log(`Indexing ${owner}/${repo}`);
 
-    // --------------------------------
-    // 1. Get repository information
-    // --------------------------------
-
-    const repository = await getRepository(
-        installationId,
-        owner,
-        repo
+    console.log(
+        `Indexing ${owner}/${repo}`
     );
+
+
+    // ========================================
+    // 1. Get repository information
+    // ========================================
+
+    const repository =
+        await getRepository(
+            installationId,
+            owner,
+            repo
+        );
 
     console.log(
         `Repository: ${repository.full_name}`
@@ -39,21 +48,22 @@ export const indexRepository = async (
     );
 
 
-    // --------------------------------
+    // ========================================
     // 2. Get default branch
-    // --------------------------------
+    // ========================================
 
-    const branch = await getBranch(
-        installationId,
-        owner,
-        repo,
-        repository.default_branch
-    );
+    const branch =
+        await getBranch(
+            installationId,
+            owner,
+            repo,
+            repository.default_branch
+        );
 
 
-    // --------------------------------
-    // 3. Get tree SHA
-    // --------------------------------
+    // ========================================
+    // 3. Get Tree SHA
+    // ========================================
 
     const treeSha =
         branch.commit.commit.tree.sha;
@@ -63,39 +73,43 @@ export const indexRepository = async (
     );
 
 
-    // --------------------------------
+    // ========================================
     // 4. Get complete repository tree
-    // --------------------------------
+    // ========================================
 
-    const tree = await getRepositoryTree(
-        installationId,
-        owner,
-        repo,
-        treeSha
-    );
+    const tree =
+        await getRepositoryTree(
+            installationId,
+            owner,
+            repo,
+            treeSha
+        );
 
     console.log(
         `Total tree entries: ${tree.tree.length}`
     );
 
 
-    // --------------------------------
+    // ========================================
     // 5. Filter useful source files
-    // --------------------------------
+    // ========================================
 
     const sourceFiles =
-        filterSourceFiles(tree.tree);
+        filterSourceFiles(
+            tree.tree
+        );
 
     console.log(
         `Useful source files: ${sourceFiles.length}`
     );
 
 
-    // --------------------------------
-    // 6. Fetch + analyze each file
-    // --------------------------------
+    // ========================================
+    // 6. Fetch and analyze files
+    // ========================================
 
     const analyzedFiles = [];
+
 
     for (const file of sourceFiles) {
 
@@ -105,6 +119,7 @@ export const indexRepository = async (
                 `Analyzing: ${file.path}`
             );
 
+
             const analyzedFile =
                 await fetchAndAnalyzeFile(
                     installationId,
@@ -113,9 +128,11 @@ export const indexRepository = async (
                     file.path
                 );
 
+
             analyzedFiles.push(
                 analyzedFile
             );
+
 
         } catch (error) {
 
@@ -123,19 +140,44 @@ export const indexRepository = async (
                 `Failed to analyze ${file.path}:`,
                 error.message
             );
-
         }
     }
 
 
-    // --------------------------------
-    // 7. Return repository data
-    // --------------------------------
+    // ========================================
+    // 7. Build dependency graph
+    // ========================================
+
+    const dependencies =
+        buildDependencyGraph(
+            analyzedFiles
+        );
+
+
+    console.log(
+        `Dependencies found: ${dependencies.length}`
+    );
+
+
+    // ========================================
+    // 8. Return complete repository analysis
+    // ========================================
 
     return {
+
+        // Repository metadata
         repository,
+
+        // Complete Git tree
         tree,
+
+        // Filtered source files
         sourceFiles,
-        analyzedFiles
+
+        // Source files + AST analysis
+        analyzedFiles,
+
+        // File-to-file dependencies
+        dependencies
     };
 };
