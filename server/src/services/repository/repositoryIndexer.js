@@ -16,6 +16,9 @@ import {
     buildDependencyGraph
 } from "./dependencyAnalyzer.js";
 
+import {
+    createCodeChunks
+}from "./codeChunker.js";
 
 export const indexRepository = async (
     installationId,
@@ -158,7 +161,14 @@ export const indexRepository = async (
         `Dependencies found: ${dependencies.length}`
     );
 
+    const chunks =
+        createCodeChunks(
+            analyzedFiles
+        );
 
+    console.log(
+        `Code chunks created: ${chunks.length}`
+    );
     // ========================================
     // 8. Return complete repository analysis
     // ========================================
@@ -178,6 +188,7 @@ export const indexRepository = async (
         analyzedFiles,
 
         // File-to-file dependencies
-        dependencies
+        dependencies,
+        chunks
     };
 };
