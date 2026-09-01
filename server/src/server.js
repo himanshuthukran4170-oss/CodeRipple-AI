@@ -8,7 +8,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import githubRoutes from "./routes/github.routes.js";
 import repositoryRoutes from "./routes/repository.routes.js";
-
+import codeRoutes from "./routes/codeRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -28,6 +28,7 @@ app.use(
     "/api/repositories",
     repositoryRoutes
 );
+app.use("/api/code", codeRoutes);
 
 const PORT = process.env.PORT || 5000;
 

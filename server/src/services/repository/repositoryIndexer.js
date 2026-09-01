@@ -5,6 +5,10 @@ import {
 } from "../github/githubService.js";
 
 import {
+    embedAndStoreChunks
+} from "../vector/chunkEmbeddingService.js";
+
+import {
     filterSourceFiles
 } from "./fileFilter.js";
 
@@ -170,9 +174,19 @@ export const indexRepository = async (
         `Code chunks created: ${chunks.length}`
     );
     // ========================================
-    // 8. Return complete repository analysis
+    // 8. Generate embeddings and store chunks
     // ========================================
 
+    const storedChunks =
+        await embedAndStoreChunks(
+            repository,
+            chunks
+        );
+
+    console.log(
+        `Stored chunks: ${storedChunks}/${chunks.length}`
+    );
+    // 9. Return complete repository analysis
     return {
 
         // Repository metadata
@@ -189,6 +203,7 @@ export const indexRepository = async (
 
         // File-to-file dependencies
         dependencies,
-        chunks
+        chunks,
+        storedChunks
     };
 };
